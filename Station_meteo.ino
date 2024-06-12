@@ -11,7 +11,6 @@ long pulseCount = 0;
 
 const char* ssid = "#LaboD5";
 const char* password = "0123456789";
-const char* hostname = "Station_meteo OSKAR";
 
 WebServer server(80);
 
