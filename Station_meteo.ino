@@ -3,12 +3,10 @@
 #include <Adafruit_BME680.h>
 
 #define PLUIE A2
-#define DIRECTION_VENT A1
 #define VITESSE_VENT A0
 
 float niveauPluie = 0;
 float ventVitesse = 0;
-int ventDirection = 0;
 long pulseCount = 0;
 
 const char* ssid = "#LaboD5";
@@ -21,10 +19,9 @@ Adafruit_BME680 bme;  // Crée une instance du capteur BME680
 
 void handleRoot() {
   pluie();
-  MesureDirectionVent();
   MesureVitesseVent();
   String content = "<html><head><title>Weather Station</title>";
-  content += "<meta http-equiv=\"refresh\" content=\"1\">";  //Rafraichissement de la page web
+  content += "<meta http-equiv=\"refresh\" content=\"30\">";  //Rafraichissement de la page web
   content += "</head><body><h1>Weather Station</h1>";
   // Lire les données du capteur BME680
   if (bme.performReading()) {
@@ -37,7 +34,6 @@ void handleRoot() {
   }
   content += "<p>Niveau de Pluie : " + String(niveauPluie) + " mm</p>";
   content += "<p>Vitesse du vent : " + String(ventVitesse) + " Km/h</p>";
-  content += "<p>Direction du vent : " + String(vraiDirection) + "</p>";
   content += "</body></html>";
   server.send(200, "text/html", content);
 }
@@ -45,25 +41,11 @@ void handleRoot() {
 void pluie() {
   if (!digitalRead(PLUIE)) {
     niveauPluie += 0.2794;
+    delay(300);
   }
 }
-String vraiDirection;
-void MesureDirectionVent() {
-  
-  ventDirection = analogRead(DIRECTION_VENT);
-  if ((ventDirection >= 0) && (ventDirection <= 255)) {
-    vraiDirection = "S";
-  }
-  else if ((ventDirection >= 256) && (ventDirection <= 511)) {
-    vraiDirection = "O";
-  }
-  else if ((ventDirection >= 512) && (ventDirection <= 767)) {
-    vraiDirection = "N";
-  }
-  else if ((ventDirection >= 768) && (ventDirection <= 1023)) {
-    vraiDirection = "E";
-  }
-}
+
+
 
 void handleInterrupt() {
   pulseCount++;  // Incrémenter le compteur à chaque front montant détecté
@@ -71,8 +53,8 @@ void handleInterrupt() {
 
 void MesureVitesseVent() {
 
-  static unsigned long lastTime = 0;   // Variable pour stocker le dernier moment où nous avons mesuré la fréquence
-  static unsigned long lastCount = 0;  // Variable pour stocker le dernier compteur de pulses
+  unsigned long lastTime = 0;   // Variable pour stocker le dernier moment où nous avons mesuré la fréquence
+  unsigned long lastCount = 0;  // Variable pour stocker le dernier compteur de pulses
 
   unsigned long currentTime = millis();                // Obtenir le temps actuel
   unsigned long elapsedTime = currentTime - lastTime;  // Calculer le temps écoulé depuis la dernière mesure
